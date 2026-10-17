@@ -1,0 +1,309 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .scan-page {
+        color: #49372b;
+    }
+
+    .scan-card {
+        background: #fffaf2;
+        border: 1px solid #e5d4bf;
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 22px;
+        box-shadow: 0 5px 18px rgba(75, 49, 29, 0.06);
+    }
+
+    .scan-title {
+        color: #533b2c;
+        margin-top: 0;
+    }
+
+    .scan-form {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 18px;
+    }
+
+    .scan-form input {
+        flex: 1;
+        min-width: 220px;
+        padding: 13px;
+        border: 1px solid #cbb49a;
+        border-radius: 9px;
+        background: #fffdf9;
+        color: #49372b;
+    }
+
+    .scan-form button {
+        padding: 13px 22px;
+        border: none;
+        border-radius: 9px;
+        background: #79583f;
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .scan-form button:hover {
+        background: #5e422f;
+    }
+
+    .risk-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin: 20px 0;
+    }
+
+    .risk-card {
+        padding: 22px;
+        border-radius: 14px;
+        background: #f4e8d8;
+        border: 1px solid #dfc7ac;
+    }
+
+    .risk-label {
+        font-size: 13px;
+        color: #775e49;
+        margin-bottom: 10px;
+    }
+
+    .risk-number {
+        font-size: 32px;
+        font-weight: 700;
+        color: #543b2b;
+        overflow-wrap: anywhere;
+    }
+
+    .risk-level {
+        display: inline-block;
+        padding: 7px 12px;
+        margin-top: 6px;
+        border-radius: 20px;
+        background: #e5d4bf;
+        font-weight: 700;
+    }
+
+    .finding {
+        padding: 17px 0;
+        border-bottom: 1px solid #eadbc9;
+    }
+
+    .finding:last-child {
+        border-bottom: none;
+    }
+
+    .finding-name {
+        font-weight: 700;
+        margin-bottom: 7px;
+    }
+
+    .finding-description {
+        color: #76614e;
+        line-height: 1.6;
+        overflow-wrap: anywhere;
+    }
+
+    .status {
+        display: inline-block;
+        font-size: 12px;
+        padding: 5px 9px;
+        border-radius: 20px;
+        margin: 5px 0 8px;
+        background: #e9dfd1;
+    }
+
+    .status-good {
+        background: #dcebdc;
+        color: #28552c;
+    }
+
+    .status-issue {
+        background: #f4dfd5;
+        color: #8b3825;
+    }
+
+    .status-unknown {
+        background: #e9dfd1;
+        color: #655546;
+    }
+
+    .recommendation {
+        padding: 15px;
+        margin: 12px 0;
+        border-left: 4px solid #a47b53;
+        border-radius: 6px;
+        background: #f7eee2;
+    }
+
+    .muted {
+        color: #806b58;
+    }
+
+    .error-message {
+        background: #f7e1dc;
+        color: #852d20;
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: 15px;
+    }
+
+    @media (max-width: 600px) {
+        .scan-card {
+            padding: 17px;
+        }
+
+        .risk-number {
+            font-size: 27px;
+        }
+    }
+</style>
+
+<div class="scan-page">
+    <div class="scan-card">
+        <h1 class="scan-title">Website Security Scanner</h1>
+        <p class="muted">
+            Scan a website you own or have permission to assess.
+            Review the security headers, connection configuration,
+            and other basic checks.
+        </p>
+
+        <form method="POST" action="{{ url_for('scanner_page') }}"
+              class="scan-form">
+            <input
+                type="url"
+                name="url"
+                placeholder="http://127.0.0.1:5001"
+                value="{{ request.form.get('url', '') }}"
+                required
+            >
+            <button type="submit">Run Security Scan</button>
+        </form>
+    </div>
+
+    {% if scan_result %}
+        {% if scan_result.get('success') %}
+
+            <div class="risk-grid">
+                <div class="risk-card">
+                    <div class="risk-label">Estimated Risk Score</div>
+                    <div class="risk-number">
+                        {{ scan_result.get('risk_score', 0) }}/100
+                    </div>
+                    <p class="muted">Educational estimate</p>
+                </div>
+
+                <div class="risk-card">
+                    <div class="risk-label">Risk Level</div>
+                    <div class="risk-level">
+                        {{ scan_result.get('risk_level', 'Not calculated') }}
+                    </div>
+                    <p class="muted">Based on the checks performed</p>
+                </div>
+
+                <div class="risk-card">
+                    <div class="risk-label">HTTP Status</div>
+                    <div class="risk-number">
+                        {{ scan_result.get('http_status', 'N/A') }}
+                    </div>
+                    <p class="muted">Response from the website</p>
+                </div>
+            </div>
+
+            <div class="scan-card">
+                <h2 class="scan-title">Scan Summary</h2>
+                <p><strong>Scanned URL:</strong>
+                    {{ scan_result.get('url', 'N/A') }}
+                </p>
+                <p><strong>Total checks:</strong>
+                    {{ scan_result.get('results', [])|length }}
+                </p>
+                <p class="muted">
+                    A low score does not prove a website is secure.
+                    These checks are limited and may not identify every
+                    vulnerability.
+                </p>
+            </div>
+
+            <div class="scan-card">
+                <h2 class="scan-title">Recommendations</h2>
+
+                {% set recommendations = scan_result.get('recommendations', []) %}
+
+                {% if recommendations %}
+                    {% for item in recommendations %}
+                        <div class="recommendation">
+                            <strong>{{ item.get('name', 'Finding') }}</strong>
+                            <p>
+                                <span class="status status-issue">
+                                    {{ item.get('severity', 'Review') }}
+                                </span>
+                            </p>
+                            <p>{{ item.get('recommendation', 'Review this finding.') }}</p>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p>
+                        No scored issues were identified by the current
+                        checks. Review all findings below as well.
+                    </p>
+                {% endif %}
+            </div>
+
+            <div class="scan-card">
+                <h2 class="scan-title">Detailed Scan Findings</h2>
+
+                {% for item in scan_result.get('results', []) %}
+                    <div class="finding">
+                        <div class="finding-name">
+                            {{ item.get('name', 'Security Check') }}
+                        </div>
+
+                        {% if item.get('present') is sameas true %}
+                            <span class="status status-good">
+                                Check passed
+                            </span>
+                        {% elif item.get('present') is sameas false %}
+                            <span class="status status-issue">
+                                Issue or missing configuration
+                            </span>
+                        {% else %}
+                            <span class="status status-unknown">
+                                Not assessed
+                            </span>
+                        {% endif %}
+
+                        <div class="finding-description">
+                            {{ item.get('description', 'No description available.') }}
+                        </div>
+
+                        <p class="muted">
+                            Severity: {{ item.get('severity', 'Informational') }}
+                            · Risk points: {{ item.get('risk_points', 0) }}
+                        </p>
+
+                        {% if item.get('recommendation') %}
+                            <p>
+                                <strong>Recommendation:</strong>
+                                {{ item.get('recommendation') }}
+                            </p>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <p>No scan findings are available.</p>
+                {% endfor %}
+            </div>
+
+        {% else %}
+            <div class="error-message">
+                <strong>Scan failed.</strong>
+                <p>{{ scan_result.get('error', 'The website could not be scanned.') }}</p>
+            </div>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

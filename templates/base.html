@@ -1,0 +1,314 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}WebVulnLab{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: #f5eee5;
+            color: #493629;
+            font-family: "Segoe UI", Arial, sans-serif;
+        }
+
+        .app-layout { display: flex; min-height: 100vh; }
+
+        .sidebar {
+            width: 245px;
+            flex-shrink: 0;
+            padding: 28px 18px;
+            background: #4c3629;
+            color: #fff8ef;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 0 0 38px;
+            padding: 0 8px;
+        }
+
+        .brand-icon {
+            display: grid;
+            place-items: center;
+            width: 42px;
+            height: 42px;
+            border-radius: 13px;
+            background: #c9a783;
+            color: #39271c;
+            font-size: 22px;
+        }
+
+        .brand h2 { margin: 0; font-size: 19px; }
+        .brand p { margin: 4px 0 0; color: #d6c2ad; font-size: 11px; }
+
+        .nav-label {
+            margin: 25px 10px 10px;
+            color: #bda895;
+            font-size: 10px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .nav-link {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            padding: 13px 14px;
+            margin: 5px 0;
+            border-radius: 11px;
+            color: #e9dccf;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background .2s, color .2s;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: #735440;
+            color: #fff;
+        }
+
+        .nav-icon { width: 20px; text-align: center; }
+
+        .sidebar-note {
+            margin-top: 45px;
+            padding: 15px;
+            border: 1px solid #785e49;
+            border-radius: 13px;
+            color: #e6d4c2;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .sidebar-note strong { display: block; margin-bottom: 6px; color: #fff7ee; }
+
+        .main-area { min-width: 0; flex: 1; }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            padding: 22px 35px;
+            border-bottom: 1px solid #e8dacc;
+            background: rgba(255, 250, 244, .75);
+        }
+
+        .topbar p { margin: 0; color: #887666; font-size: 13px; }
+
+        .connection {
+            padding: 8px 12px;
+            border: 1px solid #d9c5ae;
+            border-radius: 20px;
+            background: #fffaf4;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .connection span { color: #54805d; }
+
+        .page-content {
+            width: 100%;
+            max-width: 1450px;
+            margin: auto;
+            padding: 35px;
+        }
+
+        .page-heading { margin-bottom: 28px; }
+
+        .eyebrow {
+            color: #9a7353;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.8px;
+            text-transform: uppercase;
+        }
+
+        .page-heading h1 {
+            margin: 10px 0;
+            color: #493629;
+            font-size: clamp(27px, 3vw, 36px);
+        }
+
+        .page-heading p {
+            max-width: 700px;
+            margin: 0;
+            color: #806f60;
+            line-height: 1.7;
+        }
+
+        .panel {
+            margin-bottom: 24px;
+            padding: 25px;
+            border: 1px solid #e6d8c9;
+            border-radius: 18px;
+            background: rgba(255, 251, 246, .92);
+            box-shadow: 0 8px 28px rgba(74, 48, 31, .05);
+        }
+
+        .panel h2 { margin-top: 0; font-size: 19px; }
+        .muted { color: #806f60; line-height: 1.7; }
+
+        .primary-button {
+            display: inline-block;
+            padding: 12px 18px;
+            border: 0;
+            border-radius: 10px;
+            background: #73513b;
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .primary-button:hover { background: #593c2b; }
+
+        .empty-state {
+            padding: 25px;
+            border: 1px dashed #d6c2ad;
+            border-radius: 13px;
+            color: #806f60;
+            line-height: 1.7;
+        }
+
+        .form-field { margin: 18px 0; }
+
+        .form-field label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .form-field input {
+            width: 100%;
+            padding: 13px;
+            border: 1px solid #d9c5ae;
+            border-radius: 10px;
+            background: #fffdf9;
+            color: #493629;
+            font-size: 14px;
+        }
+
+        .form-field input:focus {
+            outline: 2px solid #c9a783;
+            outline-offset: 1px;
+        }
+
+        .scan-error {
+            margin: 18px 0;
+            padding: 15px;
+            border-radius: 10px;
+            background: #f8e7dc;
+            color: #8b4935;
+            overflow-wrap: anywhere;
+        }
+
+        .header-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 14px;
+            margin-top: 20px;
+        }
+
+        .header-result {
+            padding: 17px;
+            border: 1px solid #e6d8c9;
+            border-radius: 13px;
+            background: #fffdf9;
+            overflow-wrap: anywhere;
+        }
+
+        .header-result h3 { font-size: 15px; }
+
+        .status-present, .status-missing {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .status-present { background: #e4f1e6; color: #356447; }
+        .status-missing { background: #f8e7dc; color: #8b4935; }
+
+        .footer {
+            padding: 20px 35px;
+            color: #8b7867;
+            font-size: 12px;
+        }
+
+        @media (max-width: 760px) {
+            .app-layout { display: block; }
+            .sidebar { width: 100%; padding: 18px; }
+            .brand { margin-bottom: 18px; }
+            .nav-label, .sidebar-note { display: none; }
+            .sidebar nav { display: flex; flex-wrap: wrap; gap: 5px; }
+            .nav-link { padding: 10px; }
+            .topbar { padding: 16px 20px; }
+            .page-content { padding: 22px 16px; }
+            .panel { padding: 19px; }
+        }
+    </style>
+</head>
+<body>
+<div class="app-layout">
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">⌘</div>
+            <div>
+                <h2>WebVulnLab</h2>
+                <p>Website Security Studio</p>
+            </div>
+        </div>
+
+        <nav>
+            <div class="nav-label">Workspace</div>
+            <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">
+                <span class="nav-icon">▦</span> Overview
+            </a>
+            <a class="nav-link {% if request.path == '/scanner' %}active{% endif %}" href="/scanner">
+                <span class="nav-icon">⌕</span> Vulnerability Scanner
+            </a>
+            <a class="nav-link {% if request.path == '/findings' %}active{% endif %}" href="/findings">
+                <span class="nav-icon">◈</span> Findings
+            </a>
+
+            <div class="nav-label">Management</div>
+            <a class="nav-link {% if request.path == '/reports' %}active{% endif %}" href="/reports">
+                <span class="nav-icon">▤</span> Reports
+            </a>
+            <a class="nav-link {% if request.path == '/settings' %}active{% endif %}" href="/settings">
+                <span class="nav-icon">⚙</span> Settings
+            </a>
+        </nav>
+
+        <div class="sidebar-note">
+            <strong>◇ Responsible testing</strong>
+            Scan only websites you own or have explicit permission to test.
+        </div>
+    </aside>
+
+    <div class="main-area">
+        <header class="topbar">
+            <p>Security workspace / {% block breadcrumb %}Overview{% endblock %}</p>
+            <div class="connection"><span>●</span> Local workspace</div>
+        </header>
+
+        <main class="page-content">
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="footer">
+            WebVulnLab · Educational security assessment tool
+        </footer>
+    </div>
+</div>
+</body>
+</html>

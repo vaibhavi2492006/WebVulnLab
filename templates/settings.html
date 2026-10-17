@@ -1,0 +1,77 @@
+
+{% extends "base.html" %}
+
+{% block title %}Settings | WebVulnLab{% endblock %}
+{% block breadcrumb %}Settings{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+    <div class="eyebrow">Workspace configuration</div>
+    <h1>Settings</h1>
+    <p>
+        Review your WebVulnLab configuration and current assessment
+        capabilities.
+    </p>
+</section>
+
+<section class="panel">
+    <h2>Application information</h2>
+    <p class="muted">
+        These settings are informational for now. They do not change
+        the scanner's behavior.
+    </p>
+
+    <div style="display:grid; gap:0;">
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:15px; flex-wrap:wrap; padding:17px 0; border-bottom:1px solid #e6d8c9;">
+            <div>
+                <strong>Application name</strong>
+                <p class="muted">Your security assessment workspace</p>
+            </div>
+            <span>WebVulnLab</span>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:15px; flex-wrap:wrap; padding:17px 0; border-bottom:1px solid #e6d8c9;">
+            <div>
+                <strong>Assessment module</strong>
+                <p class="muted">Current scanner capability</p>
+            </div>
+            <span class="status-present">HTTP headers</span>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:15px; flex-wrap:wrap; padding:17px 0; border-bottom:1px solid #e6d8c9;">
+            <div>
+                <strong>Report storage</strong>
+                <p class="muted">Latest results are stored in application memory</p>
+            </div>
+            <span>Temporary</span>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:15px; flex-wrap:wrap; padding:17px 0;">
+            <div>
+                <strong>Environment</strong>
+                <p class="muted">Development server for local testing</p>
+            </div>
+            <span>Local</span>
+        </div>
+    </div>
+</section>
+
+<section class="panel">
+    <h2>Responsible testing</h2>
+    <p class="muted">
+        Only assess websites you own or have explicit permission to test.
+        This student project is an educational tool, not a substitute for
+        a professional security audit.
+    </p>
+</section>
+
+<section class="panel">
+    <h2>Next improvements</h2>
+    <ul class="muted" style="padding-left:20px; line-height:2;">
+        <li>Additional HTTPS and TLS configuration checks</li>
+        <li>Cookie security attribute checks</li>
+        <li>Redirect behavior and information disclosure checks</li>
+        <li>Persistent scan history and downloadable PDF reports</li>
+    </ul>
+</section>
+{% endblock %}

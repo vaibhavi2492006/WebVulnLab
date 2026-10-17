@@ -1,0 +1,209 @@
+
+{% extends "base.html" %}
+
+{% block title %}Reports | WebVulnLab{% endblock %}
+{% block breadcrumb %}Reports{% endblock %}
+
+{% block content %}
+
+<style>
+.report-heading {
+    margin-bottom: 24px;
+}
+
+.report-heading h1 {
+    color: #563d2e;
+}
+
+.history-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.history-card {
+    background: #fffaf3;
+    border: 1px solid #e6d8c9;
+    border-radius: 14px;
+    padding: 20px;
+}
+
+.history-label {
+    color: #896f5b;
+    font-size: 13px;
+}
+
+.history-value {
+    color: #563d2e;
+    font-size: 24px;
+    font-weight: 700;
+    margin-top: 10px;
+    overflow-wrap: anywhere;
+}
+
+.history-table-wrap {
+    overflow-x: auto;
+    width: 100%;
+}
+
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 650px;
+}
+
+.history-table th,
+.history-table td {
+    padding: 14px 12px;
+    text-align: left;
+    border-bottom: 1px solid #eadfd3;
+    vertical-align: top;
+}
+
+.history-table th {
+    background: #f4e9dc;
+    color: #654832;
+    font-size: 13px;
+}
+
+.history-table td {
+    color: #654832;
+    font-size: 14px;
+}
+
+.target-url {
+    overflow-wrap: anywhere;
+    max-width: 260px;
+}
+
+.risk-pill {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 20px;
+    background: #efe3d5;
+    color: #654832;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.export-button {
+    display: inline-block;
+    padding: 11px 18px;
+    background: #6f4e37;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.export-button:hover {
+    background: #4b3325;
+}
+
+.empty-history {
+    padding: 30px 15px;
+    text-align: center;
+    color: #896f5b;
+}
+</style>
+
+<section class="page-heading report-heading">
+    <div class="eyebrow">Assessment Records</div>
+    <h1>Scan History & Reports</h1>
+    <p>
+        Review successful assessments recorded during this
+        WebVulnLab session and export the latest report.
+    </p>
+</section>
+
+<div class="history-summary">
+    <div class="history-card">
+        <div class="history-label">Successful Scans</div>
+        <div class="history-value">{{ reports | length }}</div>
+    </div>
+
+    <div class="history-card">
+        <div class="history-label">Latest Risk Score</div>
+        <div class="history-value">
+            {% if latest_scan and latest_scan.get('success') %}
+                {{ latest_scan.get('risk_score', 0) }}/100
+            {% else %}
+                —
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="history-card">
+        <div class="history-label">Latest Risk Level</div>
+        <div class="history-value" style="font-size:20px;">
+            {% if latest_scan and latest_scan.get('success') %}
+                {{ latest_scan.get('risk_level', 'Not assessed') }}
+            {% else %}
+                Not assessed
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<section class="panel">
+    <div style="display:flex; justify-content:space-between;
+                align-items:center; gap:15px; flex-wrap:wrap;
+                margin-bottom:20px;">
+        <div>
+            <div class="eyebrow">Assessment Log</div>
+            <h2 style="margin-top:8px;">Previous Scans</h2>
+        </div>
+
+        <a href="{{ url_for('export_report') }}" class="export-button">
+            Download PDF Report ↓
+        </a>
+    </div>
+
+    {% if reports %}
+    <div class="history-table-wrap">
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th>Target URL</th>
+                    <th>Risk Score</th>
+                    <th>Risk Level</th>
+                    <th>HTTP Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for scan in reports %}
+                <tr>
+                    <td class="target-url">
+                        {{ scan.get('url', 'Unknown URL') }}
+                    </td>
+                    <td>
+                        {{ scan.get('risk_score', 0) }}/100
+                    </td>
+                    <td>
+                        <span class="risk-pill">
+                            {{ scan.get('risk_level', 'Not assessed') }}
+                        </span>
+                    </td>
+                    <td>
+                        {{ scan.get('http_status', 'N/A') }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% else %}
+    <div class="empty-history">
+        <h3>No scans recorded yet</h3>
+        <p>Run a successful assessment to populate your scan history.</p>
+        <a href="{{ url_for('scanner_page') }}" class="export-button">
+            Open Scanner
+        </a>
+    </div>
+    {% endif %}
+</section>
+
+{% endblock %}

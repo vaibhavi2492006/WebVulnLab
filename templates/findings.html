@@ -1,0 +1,239 @@
+
+{% extends "base.html" %}
+
+{% block title %}Security Findings | WebVulnLab{% endblock %}
+
+{% block content %}
+<style>
+.findings-page {
+    color: #493629;
+}
+.findings-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 24px;
+}
+.findings-header h1 {
+    margin: 0 0 8px;
+}
+.findings-header p {
+    margin: 0;
+    color: #806b5b;
+}
+.findings-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.findings-btn {
+    display: inline-block;
+    padding: 11px 16px;
+    border-radius: 9px;
+    background: #6f4e37;
+    color: white;
+    text-decoration: none;
+    border: 0;
+    font-weight: 600;
+}
+.findings-btn.secondary {
+    background: #e8ddd1;
+    color: #493629;
+}
+.findings-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+.finding-stat {
+    background: #fffaf5;
+    border: 1px solid #e4d5c7;
+    border-radius: 14px;
+    padding: 20px;
+}
+.finding-stat span {
+    display: block;
+    color: #806b5b;
+    font-size: 13px;
+    margin-bottom: 8px;
+}
+.finding-stat strong {
+    font-size: 27px;
+}
+.findings-panel {
+    background: #fffaf5;
+    border: 1px solid #e4d5c7;
+    border-radius: 14px;
+    padding: 22px;
+    margin-bottom: 20px;
+}
+.findings-panel h2 {
+    margin-top: 0;
+}
+.findings-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+}
+.findings-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+}
+.findings-table th,
+.findings-table td {
+    text-align: left;
+    padding: 14px 12px;
+    border-bottom: 1px solid #eadfd5;
+    vertical-align: top;
+}
+.findings-table th {
+    color: #806b5b;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+.finding-status {
+    display: inline-block;
+    padding: 5px 9px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+.finding-status.pass {
+    background: #dcebdd;
+    color: #285a32;
+}
+.finding-status.review {
+    background: #f5dfd2;
+    color: #8b3e20;
+}
+.finding-status.unknown {
+    background: #e8e1da;
+    color: #66574a;
+}
+.finding-empty {
+    padding: 28px 12px;
+    text-align: center;
+    color: #806b5b;
+}
+@media (max-width: 600px) {
+    .findings-panel {
+        padding: 14px;
+    }
+}
+</style>
+
+{% set ns = namespace(passed=0, review=0, unknown=0) %}
+{% for item in findings %}
+    {% if item.present is sameas true %}
+        {% set ns.passed = ns.passed + 1 %}
+    {% elif item.present is sameas false %}
+        {% set ns.review = ns.review + 1 %}
+    {% else %}
+        {% set ns.unknown = ns.unknown + 1 %}
+    {% endif %}
+{% endfor %}
+
+<div class="findings-page">
+    <div class="findings-header">
+        <div>
+            <h1>Security Findings</h1>
+            <p>Review security checks from your latest successful scan.</p>
+        </div>
+        <div class="findings-actions">
+            <a class="findings-btn secondary"
+               href="{{ url_for('scanner_page') }}">New Scan</a>
+            <a class="findings-btn"
+               href="{{ url_for('export_report') }}">Export PDF</a>
+        </div>
+    </div>
+
+    <div class="findings-summary">
+        <div class="finding-stat">
+            <span>Total checks</span>
+            <strong>{{ findings | length }}</strong>
+        </div>
+        <div class="finding-stat">
+            <span>Passed checks</span>
+            <strong>{{ ns.passed }}</strong>
+        </div>
+        <div class="finding-stat">
+            <span>Needs review</span>
+            <strong>{{ ns.review }}</strong>
+        </div>
+        <div class="finding-stat">
+            <span>Not assessed</span>
+            <strong>{{ ns.unknown }}</strong>
+        </div>
+    </div>
+
+    <div class="findings-panel">
+        <h2>Latest Scan Results</h2>
+
+        {% if latest_scan and latest_scan.success and findings %}
+            <p><strong>Target:</strong>
+                {{ latest_scan.url }}
+            </p>
+            <p><strong>Risk level:</strong>
+                {{ latest_scan.risk_level }}
+                &nbsp; | &nbsp;
+                <strong>Risk score:</strong>
+                {{ latest_scan.risk_score }}/100
+            </p>
+
+            <div class="findings-table-wrap">
+                <table class="findings-table">
+                    <thead>
+                        <tr>
+                            <th>Security check</th>
+                            <th>Status</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in findings %}
+                        <tr>
+                            <td><strong>{{ item.name }}</strong></td>
+                            <td>
+                                {% if item.present is sameas true %}
+                                    <span class="finding-status pass">Passed</span>
+                                {% elif item.present is sameas false %}
+                                    <span class="finding-status review">Needs review</span>
+                                {% else %}
+                                    <span class="finding-status unknown">Not assessed</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ item.description }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="finding-empty">
+                <h3>No scan findings yet</h3>
+                <p>Run a scan to display security checks here.</p>
+                <a class="findings-btn"
+                   href="{{ url_for('scanner_page') }}">Open Scanner</a>
+            </div>
+        {% endif %}
+    </div>
+
+    {% if latest_scan and latest_scan.success and latest_scan.recommendations %}
+    <div class="findings-panel">
+        <h2>Recommended Actions</h2>
+        <ol>
+            {% for recommendation in latest_scan.recommendations %}
+                <li style="margin-bottom: 10px;">
+                    {{ recommendation }}
+                </li>
+            {% endfor %}
+        </ol>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
